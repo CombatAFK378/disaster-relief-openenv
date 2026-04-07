@@ -2,7 +2,7 @@
 title: Disaster Relief Coordinator
 emoji: 🚨
 colorFrom: red
-colorTo: orange
+colorTo: red
 sdk: docker
 app_port: 8000
 tags:
