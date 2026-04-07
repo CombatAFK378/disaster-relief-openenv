@@ -1,0 +1,151 @@
+name: disaster-relief-coordinator
+version: "1.0.0"
+description: "RL environment for training AI agents to coordinate disaster relief resources and maximise survival rates across simulated earthquake, flood, and compound disaster scenarios."
+
+author: ""
+
+tags:
+  - openenv
+  - disaster-relief
+  - humanitarian
+  - reinforcement-learning
+
+tasks:
+  - id: flood_easy
+    difficulty: easy
+    max_steps: 12
+    zones: 8
+    roads_blocked_pct: 10
+    expected_score_min: 0.65
+    expected_score_max: 0.75
+    description: "Flood scenario with 8 zones, abundant resources, mostly FOOD distribution needs, no surprise events."
+
+  - id: earthquake_medium
+    difficulty: medium
+    max_steps: 12
+    zones: 15
+    roads_blocked_pct: 40
+    expected_score_min: 0.40
+    expected_score_max: 0.55
+    description: "Earthquake with 15 zones, mixed MEDICAL/SHELTER/FOOD needs, and 2 aftershocks at hours 18 and 36 each blocking additional roads."
+
+  - id: compound_hard
+    difficulty: hard
+    max_steps: 12
+    zones: 20
+    roads_blocked_pct: 60
+    expected_score_min: 0.15
+    expected_score_max: 0.28
+    description: "Compound disaster with earthquake and chemical spill. NO-GO zones around Zone 15, resource waves at hours 0/24/48, STORM from hour 36, and external aid only if requested before hour 12."
+
+observation_space:
+  type: structured
+  fields:
+    zones:
+      type: list
+      description: "Per-zone state including zone_id, population, damage_level, road_status, needs, casualties, served, hospital_present"
+    resources:
+      type: object
+      description: "Available resource counts: ambulances, food_trucks, field_hospitals, rescue_teams"
+    simulation_hour:
+      type: integer
+      description: "Current simulation clock in hours (0, 6, 12 ... 66)"
+    weather:
+      type: object
+      description: "Current weather condition (CLEAR/RAIN/STORM) and list of affected zone IDs"
+    active_events:
+      type: list
+      description: "Last 5 simulation event log entries"
+    current_survival_rate:
+      type: float
+      description: "Live (total_population - total_casualties) / total_population"
+    baseline_survival_rate:
+      type: float
+      description: "Hardcoded no-intervention baseline per task (flood=0.61, quake=0.54, compound=0.48)"
+
+action_space:
+  type: discrete+parameterized
+  actions:
+    - name: AssessZone
+      parameters:
+        zone_id: int
+      description: "Gather detailed zone information. Penalised if zone already assessed."
+
+    - name: DispatchResource
+      parameters:
+        resource_type: "ambulances | food_trucks | field_hospitals | rescue_teams"
+        quantity: int
+        zone_id: int
+      description: "Send resources to a zone. Penalised if road is BLOCKED."
+
+    - name: EstablishFieldHospital
+      parameters:
+        zone_id: int
+      description: "Deploy a field hospital (capacity 200 patients). Consumes 1 field_hospital resource."
+
+    - name: OpenAlternativeRoute
+      parameters:
+        zone_id: int
+      description: "Upgrade road status one level: BLOCKED to DEGRADED, DEGRADED to CLEAR."
+
+    - name: RequestExternalAid
+      parameters:
+        resource_type: "ambulances | food_trucks | field_hospitals | rescue_teams"
+      description: "Request external aid. In compound_hard must be called before hour 12 or aid never arrives."
+
+    - name: PrioritizeZone
+      parameters:
+        zone_id: int
+        priority: "CRITICAL | HIGH | MEDIUM | LOW"
+      description: "Mark a zone with a named priority tier for coordinator planning."
+
+    - name: CoordinateWithNGO
+      parameters:
+        ngo_id: str
+        task: str
+      description: "Assign a coordination task to an NGO partner."
+
+reward_range:
+  min: -1.0
+  max: 1.0
+
+reward_components:
+  - "+0.02 x people reached this step (capped at 500/step)"
+  - "+0.10 per CRITICAL zone cleared within 24 hours"
+  - "+0.15 terminal bonus if hospital capacity never exceeded"
+  - "+0.20 x (agent_survival_rate - baseline_survival_rate) at episode end"
+  - "-0.10 per resource dispatched to a BLOCKED zone"
+  - "-0.20 per CRITICAL zone unserved for more than 12 hours (fires once per zone)"
+  - "-0.05 per duplicate AssessZone on already-assessed zone"
+
+episode_steps: 12
+hours_per_step: 6
+total_simulated_hours: 72
+
+api:
+  reset:
+    method: POST
+    path: /reset
+    body: "{ task_id: str, seed: int }"
+    returns: Observation
+
+  step:
+    method: POST
+    path: /step
+    body: "Action (discriminated union on type field)"
+    returns: StepResult
+
+  state:
+    method: GET
+    path: /state
+    returns: EpisodeState
+
+  health:
+    method: GET
+    path: /health
+    returns: "{ status: ok }"
+
+deterministic: true
+gpu_required: false
+max_cold_start_seconds: 30
+python_version: "3.11"

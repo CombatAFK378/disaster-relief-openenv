@@ -1,0 +1,8 @@
+﻿fastapi>=0.110,<1.0
+pydantic>=2.0,<3.0
+uvicorn[standard]>=0.29,<1.0
+requests>=2.31,<3.0
+openai>=1.0,<3.0
+python-dotenv>=1.0,<2.0
+openenv-core>=0.2.0
+pytest>=8.0,<10.0
