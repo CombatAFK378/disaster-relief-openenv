@@ -21,9 +21,9 @@ tags:
 
 **An OpenEnv-compliant disaster response environment where an AI coordinator allocates emergency resources across flood, earthquake, and compound-crisis scenarios under strict time constraints.**
 
-Repository: https://github.com/YOUR_USERNAME/disaster-relief-openenv
+Repository: https://github.com/CombatAFK/disaster-relief-openenv
 
-Hugging Face Space: https://huggingface.co/spaces/YOUR_USERNAME/disaster-relief-openenv
+Hugging Face Space: https://huggingface.co/spaces/CombatAFK/disaster-relief-openenv
 
 ## Why This Exists
 
@@ -129,7 +129,7 @@ Per-step raw reward is normalized by task-specific maxima (`MAX_POSSIBLE_REWARD`
 ## Setup & Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/disaster-relief-openenv
+git clone https://github.com/CombatAFK/disaster-relief-openenv
 cd disaster-relief-openenv
 pip install -r requirements.txt
 cp .env.example .env
@@ -232,7 +232,7 @@ This repository is configured for Docker-based Space deployment (`sdk: docker`, 
 
 Space URL placeholder:
 
-https://huggingface.co/spaces/YOUR_USERNAME/disaster-relief-openenv
+https://huggingface.co/spaces/CombatAFK/disaster-relief-openenv
 
 ## License
 
