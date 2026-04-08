@@ -94,7 +94,7 @@ def health() -> HealthResponse:
     tags=["Environment"],
     summary="Start a new episode",
 )
-def reset(body: ResetRequest) -> Observation:
+def reset(body: ResetRequest = ResetRequest()) -> Observation:
     """
     Initialise a fresh episode for the given task_id and seed.
 
