@@ -337,7 +337,7 @@ def run_task(task_id: str) -> float:
         log_step(step=step_num, action=action_type, reward=reward, done=done, error=error_msg)
 
         if done:
-            final_score = cumulative
+            final_score = max(0.001, min(cumulative, 0.999))
             break
 
     success = final_score >= 0.10
