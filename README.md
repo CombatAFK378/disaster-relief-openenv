@@ -112,19 +112,19 @@ JSON examples (one per action):
 
 ## Reward Function
 
-Reward logic is implemented in `app/reward.py` via `RewardCalculator.compute_step_reward`.
+Reward logic is implemented in `app/reward.py` via `RewardCalculator.compute_step_reward`. To ensure RL agents experience mathematically visible gradients without entering unrecoverable "death spirals," the raw constants are heavily scaled before being normalized by task-specific maxima (`MAX_POSSIBLE_REWARD`).
 
-| Component | Value | Fires When |
+| Component | Raw Value | Fires When |
 |---|---|---|
-| People reached bonus | +0.02 per person (cap 500 people/step) | A zone transitions unserved → served |
-| CRITICAL cleared bonus | +0.10 per zone | A CRITICAL unserved zone is served by hour <= 24 |
-| No-overflow hospital bonus | +0.15 | Terminal step, if hospital overflow never occurred |
-| Survival improvement bonus | +0.20 × max(0, survival_delta) | Terminal step |
-| Blocked dispatch penalty | -0.10 | DispatchResource targets BLOCKED road |
-| Critical overdue penalty | -0.20 (once/zone) | CRITICAL zone remains unserved for > 12 hours |
-| Duplicate assess penalty | -0.05 | AssessZone repeated on already-assessed zone |
+| People reached bonus | +0.02 per person (cap 500 people = +10.0) | A zone transitions unserved → served |
+| CRITICAL cleared bonus | +5.0 per zone | A CRITICAL unserved zone is served by hour <= 24 |
+| No-overflow hospital | +10.0 | Terminal step, if hospital overflow never occurred |
+| Survival improvement | +15.0 × max(0, survival_delta) | Terminal step |
+| Blocked dispatch penalty | -2.0 | DispatchResource targets BLOCKED road |
+| Critical overdue penalty | -2.0 (once/zone) | CRITICAL zone remains unserved for > 12 hours |
+| Duplicate assess penalty | -1.0 | AssessZone repeated on already-assessed zone |
 
-Per-step raw reward is normalized by task-specific maxima (`MAX_POSSIBLE_REWARD`) and cumulative reward is clamped to [0.00, 1.00] at episode end in `app/environment.py`.
+*Note: Cumulative reward is clamped to [0.00, 1.00] at episode end in `app/environment.py`.*
 
 ## Setup & Installation
 
@@ -182,11 +182,15 @@ Sample log format:
 
 ## Baseline Scores
 
+Baseline generated using `Llama-3.3-70B-Versatile` as the agent.
+
 | Task ID | Agent Baseline Score | No-AI Baseline (task baseline_survival_rate) |
 |---|---:|---:|
-| flood_easy | 0.70 | 0.61 |
-| earthquake_medium | 0.47 | 0.54 |
-| compound_hard | 0.21 | 0.48 |
+| flood_easy | 1.00 | 0.61 |
+| earthquake_medium | 0.51 | 0.54 |
+| compound_hard | 0.22 | 0.48 |
+
+*Notice the score variance: The agent achieves perfect triage in the Easy task, struggles against aftershocks in Medium, and its planning horizon collapses under the strict deadlines of the Hard task — creating a perfect benchmark gradient.*
 
 ## Project Structure
 

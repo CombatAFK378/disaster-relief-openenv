@@ -15,9 +15,12 @@ from openai import OpenAI
 # Configuration — all from environment variables
 # ─────────────────────────────────────────────
 
-API_BASE_URL = os.environ["API_BASE_URL"]
-MODEL_NAME   = os.environ["MODEL_NAME"]
-HF_TOKEN     = os.environ["HF_TOKEN"]
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.groq.com/openai/v1")
+MODEL_NAME   = os.getenv("MODEL_NAME", "openai/gpt-oss-120b")
+HF_TOKEN     = os.getenv("HF_TOKEN")
+
+if not HF_TOKEN:
+    raise ValueError("HF_TOKEN environment variable is missing.")
 
 ENV_BASE_URL = "http://localhost:8000"
 
