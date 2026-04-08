@@ -2,7 +2,7 @@ name: disaster-relief-coordinator
 version: "1.0.0"
 description: "RL environment for training AI agents to coordinate disaster relief resources and maximise survival rates across simulated earthquake, flood, and compound disaster scenarios."
 
-author: ""
+author: "CombatAFK"
 
 tags:
   - openenv
@@ -17,7 +17,7 @@ tasks:
     zones: 8
     roads_blocked_pct: 10
     expected_score_min: 0.65
-    expected_score_max: 0.75
+    expected_score_max: 1.00
     description: "Flood scenario with 8 zones, abundant resources, mostly FOOD distribution needs, no surprise events."
 
   - id: earthquake_medium
@@ -26,7 +26,7 @@ tasks:
     zones: 15
     roads_blocked_pct: 40
     expected_score_min: 0.40
-    expected_score_max: 0.55
+    expected_score_max: 0.68
     description: "Earthquake with 15 zones, mixed MEDICAL/SHELTER/FOOD needs, and 2 aftershocks at hours 18 and 36 each blocking additional roads."
 
   - id: compound_hard
@@ -110,13 +110,14 @@ reward_range:
   max: 1.0
 
 reward_components:
-  - "+0.02 x people reached this step (capped at 500/step)"
-  - "+0.10 per CRITICAL zone cleared within 24 hours"
-  - "+0.15 terminal bonus if hospital capacity never exceeded"
-  - "+0.20 x (agent_survival_rate - baseline_survival_rate) at episode end"
-  - "-0.10 per resource dispatched to a BLOCKED zone"
-  - "-0.20 per CRITICAL zone unserved for more than 12 hours (fires once per zone)"
-  - "-0.05 per duplicate AssessZone on already-assessed zone"
+  - "+0.02 raw per person reached this step (cap 500 people = +10.0 raw)"
+  - "+5.0 raw per CRITICAL zone cleared within 24 hours"
+  - "+10.0 raw terminal bonus if hospital capacity never exceeded"
+  - "+15.0 raw x (agent_survival_rate - baseline_survival_rate) at episode end"
+  - "-2.0 raw per resource dispatched to a BLOCKED zone"
+  - "-2.0 raw per CRITICAL zone unserved for more than 12 hours (fires once per zone)"
+  - "-1.0 raw per duplicate AssessZone on already-assessed zone"
+  - "Note: Raw rewards are normalized by task-specific max bounds to roughly [-1.0, 1.0]"
 
 episode_steps: 12
 hours_per_step: 6

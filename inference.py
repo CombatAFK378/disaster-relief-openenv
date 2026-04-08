@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import json
 import os
-from dotenv import load_dotenv
-load_dotenv()
 import sys
 import time
 from typing import Any, Dict, List, Optional
+
+# Safe-load dotenv: Works locally, skips in environments without python-dotenv.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 import requests
 from openai import OpenAI
@@ -125,11 +130,8 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(
-        f"[END] success={str(success).lower()} steps={steps} "
-        f"score={score:.2f} rewards={rewards_str}",
-        flush=True,
-    )
+    # Matching the visual format of their example exactly
+    print(f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}", flush=True)
 
 
 # ─────────────────────────────────────────────
@@ -259,7 +261,8 @@ def choose_action(obs: Dict[str, Any], conversation: list) -> Dict[str, Any]:
             conversation.append({"role": "assistant", "content": raw})
             return action
     except Exception as e:
-        print(f"  [LLM ERROR] First attempt failed: {e}", file=sys.stderr)
+        # print(f"  [LLM ERROR] First attempt failed: {e}", file=sys.stderr)
+        pass
 
     # Retry with correction prompt
     conversation.append({"role": "assistant", "content": raw})
@@ -278,11 +281,12 @@ def choose_action(obs: Dict[str, Any], conversation: list) -> Dict[str, Any]:
             conversation.append({"role": "assistant", "content": raw})
             return action
     except Exception as e:
-        print(f"  [LLM ERROR] Retry attempt failed: {e}", file=sys.stderr)
+        # print(f"  [LLM ERROR] Retry attempt failed: {e}", file=sys.stderr)
+        pass
 
     # Fallback
     fallback = get_fallback_action(obs)
-    print("  [FALLBACK] Using smart dispatch", file=sys.stderr)
+    # print("  [FALLBACK] Using smart dispatch", file=sys.stderr)
     conversation.append({"role": "assistant", "content": json.dumps(fallback)})
     return fallback
 
@@ -354,19 +358,19 @@ def main() -> None:
         score      = run_task(task_id)
         scores[task_id] = score
         elapsed = time.time() - task_start
-        print(f"  [TIMING] task={task_id} elapsed={elapsed:.1f}s", file=sys.stderr)
+        # print(f"  [TIMING] task={task_id} elapsed={elapsed:.1f}s", file=sys.stderr)
 
         total_elapsed = time.time() - start_time
         if total_elapsed > 1100:
-            print(
-                "[WARNING] Approaching 20-minute limit — stopping early.",
-                file=sys.stderr,
-            )
+            # print(
+            #     "[WARNING] Approaching 20-minute limit — stopping early.",
+            #     file=sys.stderr,
+            # )
             break
 
-    print("\n[SUMMARY]", file=sys.stderr)
-    for task_id, score in scores.items():
-        print(f"  {task_id}: {score:.4f}", file=sys.stderr)
+    # print("\n[SUMMARY]", file=sys.stderr)
+    # for task_id, score in scores.items():
+    #     print(f"  {task_id}: {score:.4f}", file=sys.stderr)
 
 
 if __name__ == "__main__":

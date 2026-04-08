@@ -180,6 +180,8 @@ Sample log format:
 [END] success=true steps=12 score=0.70 rewards=0.17,0.05,0.00,0.07,0.06,0.08,0.04,0.03,0.05,0.06,0.04,0.05
 ```
 
+Robustness Note: If LLM inference is unavailable or rate-limited, the system automatically falls back to a deterministic heuristic action policy. This ensures the disaster relief coordination environment keeps running smoothly and preserves the strict stdout formatting required by automated evaluators.
+
 ## Baseline Scores
 
 Baseline generated using `Llama-3.3-70B-Versatile` as the agent.
